@@ -11,7 +11,8 @@ const config = loadConfig();
 if (config.dbFile !== ':memory:') mkdirSync(dirname(config.dbFile), { recursive: true });
 
 const database = await createDatabase(config.dbFile);
-await runMigrations(database);
+const { adoptedLegacy } = await runMigrations(database);
+if (adoptedLegacy) console.warn('Adopted a database created before Drizzle (kept all data, recorded the baseline migration).');
 await seedIfEmpty(database);
 
 const app = buildApp(createContainer(database), { logLevel: config.logLevel });

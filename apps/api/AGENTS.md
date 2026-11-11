@@ -20,6 +20,7 @@ db/      schema.ts, client.ts, migrations/, seed.ts
 
 ## Database
 - Change `src/db/schema.ts`, then `pnpm --filter shop-api db:generate` and commit the new SQL in `src/db/migrations/`. Migrations run automatically on start.
+- Databases created before Drizzle (old `node:sqlite` API) are adopted on start by `runMigrations`: it records the baseline migration as applied and keeps all rows (`db/migrate.ts`, tests in `migrate.test.ts`). A history table with no rows does NOT count as history: Drizzle creates it before the first migration, so a crashed first attempt leaves it empty.
 - Transactions go through `database.transaction()` (queued: the client has one connection, overlapping transactions would fail with `TRANSACTION_ACTIVE`). Order creation uses a unit of work so stock decrement + order insert are atomic.
 - Stock is taken with a guarded `UPDATE ... WHERE stock >= n` (`decrementStock`): never read-then-write.
 
