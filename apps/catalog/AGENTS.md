@@ -10,3 +10,4 @@ Exposes `./CatalogPage`: product list with search (debounced), category filter, 
 - Loading UX: while a debounced search or refetch is in flight, `busy` drives the search-box spinner, the `ProgressBar`, a dimmed `aria-busy` list and the `role="status"` message. Keep these in sync when changing the query logic.
 - A11y: `src/a11y.test.tsx` runs axe on the components (colour contrast can't run in jsdom). Keep new controls labelled and keyboard operable.
 - Layout: 1 "giant" card per row on mobile, 2 columns from `sm`, 3 columns from `lg` (see `GRID` in `CatalogPage.tsx` and the responsive classes in `ProductCard.tsx`).
+- CSS: each exposed module imports `./styles.css` itself (`bootstrap.tsx` only runs in standalone mode, so CSS imported there never reaches the shell). Same rule for every remote.

@@ -1,3 +1,4 @@
+import './styles.css'; // the exposed module owns its CSS: bootstrap.tsx is not loaded when the shell embeds this remote
 import { Link } from 'react-router';
 import { ShoppingCartIcon } from '@shop/ui';
 import { useCart } from './cartStore';

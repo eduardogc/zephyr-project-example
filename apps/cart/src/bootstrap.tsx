@@ -1,5 +1,4 @@
 // Standalone harness (http://localhost:3003).
-import './styles.css';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';

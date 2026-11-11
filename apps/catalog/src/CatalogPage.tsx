@@ -1,3 +1,4 @@
+import './styles.css'; // the exposed module owns its CSS: bootstrap.tsx is not loaded when the shell embeds this remote
 import { useEffect, useState } from 'react';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router';

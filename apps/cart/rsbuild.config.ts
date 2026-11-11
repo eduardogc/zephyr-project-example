@@ -10,6 +10,9 @@ export default defineConfig({
   html: { title: 'Shop · cart' },
   output: { assetPrefix: 'auto' },
   source: {
+    // Always inline the API base URL: an unset PUBLIC_* var is otherwise left as `process.env...` and
+    // crashes in the browser (`process is not defined`). Default: same-origin `/api` (dev proxy).
+    define: { 'process.env.PUBLIC_API_URL': JSON.stringify(process.env.PUBLIC_API_URL ?? '/api') },
     // Workspace packages ship TypeScript source; let Rsbuild compile them.
     include: [path.resolve(__dirname, '../../packages')],
   },
