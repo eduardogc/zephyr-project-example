@@ -1,5 +1,10 @@
 # Zephyr Shop — micro-frontend storefront
 
+[![CI](https://github.com/eduardogc/zephyr-project-example/actions/workflows/ci.yml/badge.svg)](https://github.com/eduardogc/zephyr-project-example/actions/workflows/ci.yml)
+[![Render API](https://img.shields.io/website?url=RENDER_URL%2Fhealth&label=render%20api&up_message=healthy&down_message=down)](RENDER_URL/health)
+[![Zephyr shell](https://img.shields.io/website?url=https%3A%2F%2Fgeceduardo-16-shop-shell-zephyr-project-example-e-1a39ef0a7-ze.zephyrcloud.app&label=zephyr%20shell&up_message=deployed&down_message=down)](https://geceduardo-16-shop-shell-zephyr-project-example-e-1a39ef0a7-ze.zephyrcloud.app)
+
+
 A small but complete storefront built to showcase a modern full-stack setup:
 four independently deployable micro-frontends, a typed Fastify API and an Nx monorepo, shipped with [Zephyr Cloud](https://docs.zephyr-cloud.io).
 
@@ -64,17 +69,9 @@ Each app has an `AGENTS.md` describing its purpose, commands and conventions for
 ## Deploying
 Zephyr hosts the static frontends only; it does not run Node servers, so the API is deployed to **Render**.
 
-**One-time setup**
-1. Render: *New → Blueprint* and pick this repo (uses `render.yaml`). Copy the service's **Deploy Hook URL** and public URL.
-2. GitHub repo → *Settings → Secrets and variables → Actions*:
-   - secret `RENDER_DEPLOY_HOOK_URL`: the Render deploy hook
-   - secret `ZE_CI_TOKEN`: Zephyr CI token (app.zephyr-cloud.io → Settings → Tokens → CI Tokens; shown only once)
-   - variable `API_URL`: e.g. `https://shop-api.onrender.com/api` (the frontends' `PUBLIC_API_URL`)
-   - variable `API_HEALTH_URL`: e.g. `https://shop-api.onrender.com/health`
-
-**Pipelines** (`.github/workflows/`)
-- `ci.yml`: every PR/branch runs `nx affected -t typecheck test`.
-- `deploy-api.yml`: on push to `main` touching `apps/api`, `packages/types`, the lockfile or `render.yaml`. It tests, triggers the Render deploy hook, then waits for `/health`.
-- `deploy.yml`: on push to `main` for everything else. It runs `nx run-many -t build` (remotes, then shell, each deployed to Zephyr).
+- **API → Render:** *New → Blueprint*, pick this repo (it reads `render.yaml`). Render redeploys on every push to `main`. Health check: `/health`.
+- **Frontends → Zephyr:** `pnpm build` builds and deploys all four apps (Nx orders: shared packages → remotes → shell). Requires a Zephyr login.
+- **API URL for the frontends:** they read `PUBLIC_API_URL` at build time (default `/api`, which only works through the dev proxy). Build with `PUBLIC_API_URL=https://<your-service>.onrender.com/api pnpm build` once the API is live.
+- **CI:** `.github/workflows/ci.yml` runs `nx affected -t typecheck test` on every PR/branch.
 
 > The free Render plan has an ephemeral disk and sleeps when idle: the SQLite file is re-seeded on each deploy/restart. For persistent orders, use a paid plan with a disk mounted at `/data` and set `DB_FILE=/data/shop.sqlite`.
