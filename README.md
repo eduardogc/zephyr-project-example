@@ -27,7 +27,7 @@ packages/
 
 ## Prerequisites
 - **Node.js ≥ 22.5** (the API uses the built-in `node:sqlite`; developed on 22.15)
-- **pnpm ≥ 10** (`corepack enable` or `npm i -g pnpm`)
+- **pnpm ≥ 10** 
 - A **Zephyr Cloud account**. Zephyr is mandatory: every app is wrapped with `withZephyr()`, so `dev` and `build` need you logged in (the first run opens a browser login).
 
 ## Setup

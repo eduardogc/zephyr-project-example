@@ -4,8 +4,8 @@ services:
     name: shop-api
     runtime: node
     plan: free
-    buildCommand: corepack enable && pnpm install --frozen-lockfile --filter shop-api...
-    startCommand: pnpm --filter shop-api start
+    buildCommand: npx --yes pnpm@12.18.0 install --frozen-lockfile --filter shop-api...
+    startCommand: cd apps/api && ./node_modules/.bin/tsx src/server.ts
     healthCheckPath: /health
     autoDeploy: false # deployed from GitHub Actions via the deploy hook
     envVars:
