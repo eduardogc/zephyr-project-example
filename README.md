@@ -92,6 +92,7 @@ Zephyr hosts the static frontends only; it does not run Node servers, so the API
 
 **One-time GitHub setup**
 1. Secret `ZE_CI_TOKEN`: Zephyr CI token (app.zephyr-cloud.io → Settings → Tokens → CI Tokens).
+   **Also link your GitHub account in Zephyr Cloud (Settings → Git Providers).** Zephyr maps the GitHub Actions user to a Zephyr user through that link; without it the token is rejected with "could not be exchanged for a Zephyr access token".
 2. Settings → Pages → **Source: GitHub Actions**.
 3. Optional variable `API_URL` (defaults to the Render URL above) if you move the API.
 

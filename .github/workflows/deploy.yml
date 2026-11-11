@@ -34,6 +34,7 @@ jobs:
       shell_url: ${{ steps.url.outputs.shell_url }}
     steps:
       - uses: actions/checkout@v4
+        with: { fetch-depth: 0 } # Zephyr reads the git history to identify the committer
       - uses: pnpm/action-setup@v4
         with: { version: 12.18.0 }
       - uses: actions/setup-node@v4
@@ -56,14 +57,7 @@ jobs:
             echo "::error title=ZE_CI_TOKEN is empty::Add it as a repository SECRET (Settings > Secrets and variables > Actions > Secrets, not Variables) and make sure it is not scoped to an Environment this job does not use."
             exit 1
           fi
-          # A pasted token often carries a trailing newline, spaces or quotes. Clean it and say so.
-          CLEAN=$(printf '%s' "$ZE_CI_TOKEN" | tr -d '[:space:]"'"'"'')
-          echo "::add-mask::$CLEAN"
-          if [ "$CLEAN" != "$ZE_CI_TOKEN" ]; then
-            echo "::warning title=ZE_CI_TOKEN was cleaned::The secret contained whitespace or quotes (${#ZE_CI_TOKEN} -> ${#CLEAN} chars). Re-create the secret without them."
-          fi
-          echo "ZE_CI_TOKEN=$CLEAN" >> "$GITHUB_ENV"
-          echo "::notice title=Zephyr credentials::token present, ${#CLEAN} chars. Branch $(git rev-parse --abbrev-ref HEAD), commit $(git rev-parse --short HEAD)"
+          echo "::notice title=Zephyr credentials::ZE_CI_TOKEN present. Branch $(git rev-parse --abbrev-ref HEAD), commit $(git rev-parse --short HEAD), actor $GITHUB_ACTOR"
         env:
           ZE_CI_TOKEN: ${{ secrets.ZE_CI_TOKEN }}
 
@@ -72,6 +66,7 @@ jobs:
         shell: bash # explicit shell enables `pipefail`, so a failed build is not hidden by `tee`
         run: npx nx run-many -t build --projects=shop-catalog,shop-product,shop-cart,shop-shell --outputStyle=stream 2>&1 | tee build.log
         env:
+          ZE_CI_TOKEN: ${{ secrets.ZE_CI_TOKEN }}
           ZE_FAIL_BUILD: 'true'
           CI: 'true'
 
