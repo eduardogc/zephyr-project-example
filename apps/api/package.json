@@ -8,17 +8,21 @@
     "build": "tsc -p tsconfig.json --noEmit",
     "start": "tsx src/server.ts",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
     "@fastify/cors": "^11.1.0",
+    "@libsql/client": "^0.18.0",
     "@shop/types": "workspace:*",
+    "drizzle-orm": "^0.45.4",
     "fastify": "^5.6.0",
     "zod": "^4.1.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
     "@vitest/coverage-v8": "^3.2.7",
+    "drizzle-kit": "^0.31.11",
     "tsx": "^4.20.0",
     "typescript": "^5.9.3",
     "vitest": "^3.2.0"

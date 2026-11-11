@@ -17,7 +17,7 @@ apps/
   catalog/   remote: product list, search/filter/sort/page (TanStack Query, URL state)   :3001
   product/   remote: product detail, add to cart           (a11y, loading/error states)  :3002
   cart/      remote: cart state, checkout form + mutation  (zod validation)              :3003
-  api/       Fastify + node:sqlite REST API                (zod validation, tx orders)   :4000
+  api/       Fastify + Drizzle ORM (SQLite) REST API       (layered, typed errors)       :4000
 packages/
   types/       zod schemas + shared types (single source of truth for API and UI)
   api-client/  typed, validated fetch client
@@ -29,12 +29,12 @@ packages/
 - **Resilience**: every remote is behind an error boundary + Suspense — if `catalog` is down, the header and cart still work.
 - **Decoupled remotes**: `product` → `cart` communication is a typed `window` event (`CART_ADD_EVENT`), not an import.
 - **End-to-end types**: zod schemas in `@shop/types` validate API input *and* API responses on the client.
-- **Real backend behaviour**: order creation is transactional (stock check + decrement, rollback on failure).
+- **Real backend behaviour**: layered API (routes → services → repositories → Drizzle), typed business/server errors, and order creation that is transactional and race-safe (concurrent checkouts can't oversell).
 - **Nx**: task graph, caching (`nx build`, `nx test`), `nx graph`, `nx affected -t test`.
 - **Tests**: Vitest for API (Fastify `inject`), UI components (Testing Library) and the cart store.
 
 ## Prerequisites
-- **Node.js ≥ 22.5** (the API uses the built-in `node:sqlite`; developed on 22.15)
+- **Node.js ≥ 22** (developed on 22.15)
 - **pnpm ≥ 10** 
 - A **Zephyr Cloud account**. Zephyr is mandatory: every app is wrapped with `withZephyr()`, so `dev` and `build` need you logged in (the first run opens a browser login).
 

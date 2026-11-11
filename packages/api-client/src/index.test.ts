@@ -41,7 +41,7 @@ describe('api.getProduct', () => {
     fetchMock.mockResolvedValue(json({ error: 'Product not found' }, 404));
     const err = await api.getProduct('x').catch((e) => e);
     expect(err).toBeInstanceOf(ApiRequestError);
-    expect(err).toMatchObject({ status: 404, message: 'Product not found', issues: [] });
+    expect(err).toMatchObject({ status: 404, message: 'Product not found', issues: [], code: undefined, isBusinessError: false });
   });
 });
 
@@ -65,6 +65,16 @@ describe('api.createOrder', () => {
     const err = (await api.createOrder(input).catch((e) => e)) as ApiRequestError;
     expect(err.status).toBe(400);
     expect(err.issues).toEqual([{ path: 'customer.email', message: 'Invalid email' }]);
+  });
+
+  it('exposes the error code and whether it is a business error', async () => {
+    fetchMock.mockResolvedValue(json({ error: 'Not enough stock for Aero', code: 'OUT_OF_STOCK' }, 409));
+    const business = (await api.createOrder(input).catch((e) => e)) as ApiRequestError;
+    expect(business).toMatchObject({ status: 409, code: 'OUT_OF_STOCK', isBusinessError: true });
+
+    fetchMock.mockResolvedValue(json({ error: 'Internal server error', code: 'INTERNAL_ERROR' }, 500));
+    const server = (await api.createOrder(input).catch((e) => e)) as ApiRequestError;
+    expect(server).toMatchObject({ code: 'INTERNAL_ERROR', isBusinessError: false });
   });
 
   it('falls back to the status text when the error body is not JSON', async () => {

@@ -55,8 +55,22 @@ export const orderSchema = z.object({
 });
 export type Order = z.infer<typeof orderSchema>;
 
+/**
+ * Machine-readable error codes returned by the API (`code` in every error body).
+ * - business: the request was understood but a rule was violated (4xx, message is safe to show)
+ * - server:   something broke on our side (5xx, message is generic, details only in logs)
+ */
+export const BUSINESS_ERROR_CODES = ['VALIDATION_ERROR', 'BAD_REQUEST', 'NOT_FOUND', 'OUT_OF_STOCK', 'CONFLICT'] as const;
+export const SERVER_ERROR_CODES = ['INTERNAL_ERROR', 'DATABASE_ERROR'] as const;
+export const ERROR_CODES = [...BUSINESS_ERROR_CODES, ...SERVER_ERROR_CODES] as const;
+export const errorCodeSchema = z.enum(ERROR_CODES);
+export type ErrorCode = z.infer<typeof errorCodeSchema>;
+export const isBusinessErrorCode = (code: unknown): boolean => (BUSINESS_ERROR_CODES as readonly unknown[]).includes(code);
+
 export const apiErrorSchema = z.object({
   error: z.string(),
+  /** Optional only so non-API failures (e.g. a proxy's own 502 body) still parse. */
+  code: errorCodeSchema.optional(),
   issues: z.array(z.object({ path: z.string(), message: z.string() })).optional(),
 });
 export type ApiError = z.infer<typeof apiErrorSchema>;

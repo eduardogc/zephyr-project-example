@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatPrice, orderInputSchema, productPageSchema, productQuerySchema, productSchema } from './index';
+import { apiErrorSchema, formatPrice, isBusinessErrorCode, orderInputSchema, productPageSchema, productQuerySchema, productSchema } from './index';
 
 describe('productQuerySchema', () => {
   it('applies defaults', () => {
@@ -64,5 +64,18 @@ describe('formatPrice', () => {
     expect(formatPrice(12900)).toBe('$129.00');
     expect(formatPrice(5)).toBe('$0.05');
     expect(formatPrice(0)).toBe('$0.00');
+  });
+});
+
+describe('error contract', () => {
+  it('parses API errors with and without a code', () => {
+    expect(apiErrorSchema.parse({ error: 'x', code: 'NOT_FOUND' }).code).toBe('NOT_FOUND');
+    expect(apiErrorSchema.parse({ error: 'bad gateway' }).code).toBeUndefined();
+    expect(apiErrorSchema.safeParse({ error: 'x', code: 'MADE_UP' }).success).toBe(false);
+  });
+
+  it('classifies business vs server codes', () => {
+    expect(['VALIDATION_ERROR', 'NOT_FOUND', 'OUT_OF_STOCK', 'CONFLICT', 'BAD_REQUEST'].every(isBusinessErrorCode)).toBe(true);
+    expect(['INTERNAL_ERROR', 'DATABASE_ERROR', undefined, 'nope'].some(isBusinessErrorCode)).toBe(false);
   });
 });

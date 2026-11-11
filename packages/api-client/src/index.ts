@@ -1,5 +1,7 @@
 import {
   apiErrorSchema,
+  isBusinessErrorCode,
+  type ErrorCode,
   orderSchema,
   productPageSchema,
   productSchema,
@@ -19,8 +21,14 @@ export class ApiRequestError extends Error {
     message: string,
     public status: number,
     public issues: { path: string; message: string }[] = [],
+    public code?: ErrorCode,
   ) {
     super(message);
+  }
+
+  /** True when the server rejected the request on a business rule (message is safe to show users). */
+  get isBusinessError() {
+    return isBusinessErrorCode(this.code);
   }
 }
 
@@ -32,7 +40,7 @@ async function request<T>(path: string, parse: (data: unknown) => T, init?: Requ
   const data: unknown = await res.json().catch(() => ({}));
   if (!res.ok) {
     const err = apiErrorSchema.safeParse(data);
-    throw new ApiRequestError(err.success ? err.data.error : res.statusText, res.status, err.success ? err.data.issues : []);
+    throw new ApiRequestError(err.success ? err.data.error : res.statusText, res.status, err.success ? err.data.issues : [], err.success ? err.data.code : undefined);
   }
   return parse(data);
 }
