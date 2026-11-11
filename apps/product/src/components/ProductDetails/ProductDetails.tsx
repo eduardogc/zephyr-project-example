@@ -31,15 +31,16 @@ export function ProductDetails({ product }: { product: Product }) {
   return (
     <article className="space-y-6">
       <nav aria-label="Breadcrumb">
-        {/* One flex row so the link (with its icon) and the text share the same vertical centre. */}
-        <ol className="flex items-center gap-2 text-sm text-muted">
-          <li>
-            <Link to="/" className="inline-flex items-center gap-1 hover:underline">
+        {/* Flex all the way down: an inline-flex link inside a block <li> sits on the text baseline and ends up
+            a couple of pixels higher than its siblings. A fixed line height keeps every item the same height. */}
+        <ol className="flex items-center gap-2 text-sm leading-5 text-muted">
+          <li className="flex items-center">
+            <Link to="/" className="flex items-center gap-1 hover:underline">
               <ChevronLeftIcon aria-hidden className="size-4" /> Shop
             </Link>
           </li>
-          <li aria-hidden>/</li>
-          <li aria-current="page" className="capitalize">{product.category}</li>
+          <li aria-hidden className="flex items-center">/</li>
+          <li aria-current="page" className="flex items-center capitalize">{product.category}</li>
         </ol>
       </nav>
       <div className="grid gap-8 md:grid-cols-2">

@@ -6,4 +6,4 @@ Exposes `./CartButton` (header badge, always mounted by the shell) and `./CartPa
 - Checkout: `CheckoutForm` validates with `orderInputSchema` from `@shop/types`, posts via `api.createOrder`, maps server `issues` back to fields, clears the cart on success.
 - Tests: `pnpm --filter shop-cart test` (store behaviour).
 - Run: `pnpm --filter shop-cart dev` · build/deploy: `pnpm --filter shop-cart build`.
-- Structure: `pages/CartPage` (exposed as `./CartPage`), `components/CartButton` (exposed as `./CartButton`), `components/CheckoutForm`, `store/cartStore`.
+- Structure: `pages/CartPage` (exposed as `./CartPage`), `components/CartLineItem` (one cart row, flexbox only: no CSS grid on the cart), `components/CartButton` (exposed as `./CartButton`), `components/CheckoutForm`, `store/cartStore`.
