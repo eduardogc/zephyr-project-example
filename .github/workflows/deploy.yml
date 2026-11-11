@@ -63,7 +63,7 @@ jobs:
           fi
           echo "::notice title=Zephyr credentials::token present (from secret: $TOKEN_SOURCE). Branch $(git rev-parse --abbrev-ref HEAD), commit $(git rev-parse --short HEAD), actor $GITHUB_ACTOR"
         env:
-          TOKEN_SOURCE: ${{ secrets.ZEPHYR_CI_TOKEN != '' && 'ZEPHYR_CI_TOKEN' || 'ZE_CI_TOKEN (old name: ZEPHYR_CI_TOKEN is not set)' }}
+          TOKEN_SOURCE: "${{ secrets.ZEPHYR_CI_TOKEN != '' && 'ZEPHYR_CI_TOKEN' || 'ZE_CI_TOKEN, the old name, because ZEPHYR_CI_TOKEN is not set' }}"
 
       # Nx orders it: shared packages -> remotes -> shell. Every `build` deploys to Zephyr.
       - name: Build and deploy to Zephyr
