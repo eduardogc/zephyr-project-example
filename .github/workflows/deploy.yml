@@ -28,5 +28,6 @@ jobs:
       # Nx orders the build: shared packages -> remotes -> shell. Each `build` deploys to Zephyr.
       - run: npx nx run-many -t build --projects=shop-shell,shop-catalog,shop-product,shop-cart
         env:
-          ZE_SECRET_TOKEN: ${{ secrets.ZE_SECRET_TOKEN }}
+          ZE_CI_TOKEN: ${{ secrets.ZE_CI_TOKEN }}
+          ZE_FAIL_BUILD: "true"
           PUBLIC_API_URL: ${{ vars.API_URL }}

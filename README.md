@@ -68,7 +68,7 @@ Zephyr hosts the static frontends only; it does not run Node servers, so the API
 1. Render: *New → Blueprint* and pick this repo (uses `render.yaml`). Copy the service's **Deploy Hook URL** and public URL.
 2. GitHub repo → *Settings → Secrets and variables → Actions*:
    - secret `RENDER_DEPLOY_HOOK_URL`: the Render deploy hook
-   - secret `ZE_SECRET_TOKEN`: Zephyr API token (Zephyr dashboard → settings)
+   - secret `ZE_CI_TOKEN`: Zephyr CI token (app.zephyr-cloud.io → Settings → Tokens → CI Tokens; shown only once)
    - variable `API_URL`: e.g. `https://shop-api.onrender.com/api` (the frontends' `PUBLIC_API_URL`)
    - variable `API_HEALTH_URL`: e.g. `https://shop-api.onrender.com/health`
 
