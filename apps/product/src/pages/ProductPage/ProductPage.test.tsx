@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router';
@@ -39,6 +39,17 @@ describe('ProductPage', () => {
     expect(screen.getByRole('link', { name: 'Daniel Romero' })).toHaveAttribute('href', expect.stringContaining('unsplash.com/photos/'));
     expect(document.title).toBe('Aero Buds Pro · Zephyr Shop');
     expect(getProduct).toHaveBeenCalledWith('aero-buds');
+  });
+
+  it('has a breadcrumb list: a link back to the shop, then the current category', async () => {
+    getProduct.mockResolvedValue(product);
+    renderPage();
+    const nav = await screen.findByRole('navigation', { name: 'Breadcrumb' });
+    const items = within(nav).getAllByRole('listitem');
+    expect(items).toHaveLength(2); // the "/" separator is decorative (aria-hidden)
+    expect(within(items[0]!).getByRole('link', { name: 'Shop' })).toHaveAttribute('href', '/');
+    expect(items[1]).toHaveAttribute('aria-current', 'page');
+    expect(items[1]).toHaveTextContent('audio');
   });
 
   it('falls back to generated art for products without a photo', async () => {

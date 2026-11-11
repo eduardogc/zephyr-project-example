@@ -63,11 +63,17 @@ export default function ProductPage() {
 
   return (
     <article className="space-y-6">
-      <nav aria-label="Breadcrumb" className="text-sm text-muted">
-        <Link to="/" className="inline-flex items-center gap-1 hover:underline">
-          <ChevronLeftIcon aria-hidden className="size-4" /> Shop
-        </Link>{' '}
-        / <span className="capitalize">{product.category}</span>
+      <nav aria-label="Breadcrumb">
+        {/* One flex row so the link (with its icon) and the text share the same vertical centre. */}
+        <ol className="flex items-center gap-2 text-sm text-muted">
+          <li>
+            <Link to="/" className="inline-flex items-center gap-1 hover:underline">
+              <ChevronLeftIcon aria-hidden className="size-4" /> Shop
+            </Link>
+          </li>
+          <li aria-hidden>/</li>
+          <li aria-current="page" className="capitalize">{product.category}</li>
+        </ol>
       </nav>
       <div className="grid gap-8 md:grid-cols-2">
         <ProductImage product={product} />
