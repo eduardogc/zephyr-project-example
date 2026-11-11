@@ -24,6 +24,17 @@ packages/
   ui/          design tokens (Tailwind v4) + accessible components, with tests
 ```
 
+## Code layout
+Every frontend follows the same structure, so you always know where to look:
+```
+src/
+  pages/<Page>/        route-level components (what each remote exposes)
+  components/<X>/      one folder per component: X.tsx · X.test.tsx · index.ts
+  hooks/ · store/      same rule
+  test/                setup + helpers
+apps/api/src/          modules/<feature>/ {routes, service, repository}, db/, errors/, plugins/
+```
+
 ## Highlights
 - **Module Federation + Zephyr**: each remote builds and deploys on its own; the shell resolves them via `zephyr:dependencies`. Roll back or ship one remote without touching the others.
 - **Resilience**: every remote is behind an error boundary + Suspense — if `catalog` is down, the header and cart still work.
@@ -87,7 +98,7 @@ Zephyr hosts the static frontends only; it does not run Node servers, so the API
 > The free Render plan has an ephemeral disk and sleeps when idle: the SQLite file is re-seeded on each deploy/restart. For persistent orders, use a paid plan with a disk mounted at `/data` and set `DB_FILE=/data/shop.sqlite`.
 
 ## Credits
-Product photos are from [Unsplash](https://unsplash.com) (free licence); photographers are credited on each product page and in `apps/product/src/productImages.ts`. The images are bundled with the `product` remote, so Zephyr serves them from its edge.
+Product photos are from [Unsplash](https://unsplash.com) (free licence); photographers are credited on each product page and in `apps/product/src/components/ProductImage/productPhotos.ts`. The images are bundled with the `product` remote, so Zephyr serves them from its edge.
 
 ## Accessibility
 Skip link, landmarks, focus + title management on route changes, labelled controls and fieldsets, live regions for search/filter status, visible focus, reduced-motion support and AA-contrast tokens. `pnpm test` runs axe checks on the catalog components.

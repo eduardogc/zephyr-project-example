@@ -21,7 +21,7 @@ export default defineConfig({
     pluginModuleFederation({
       name: 'cart',
       filename: 'remoteEntry.js',
-      exposes: { './CartButton': './src/CartButton.tsx', './CartPage': './src/CartPage.tsx' },
+      exposes: { './CartButton': './src/components/CartButton/index.ts', './CartPage': './src/pages/CartPage/index.ts' },
       shared: {
         react: singleton,
         'react-dom': singleton,

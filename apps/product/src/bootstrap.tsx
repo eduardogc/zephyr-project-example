@@ -3,7 +3,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Route, Routes } from 'react-router';
-import ProductPage from './ProductPage';
+import ProductPage from './pages/ProductPage';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

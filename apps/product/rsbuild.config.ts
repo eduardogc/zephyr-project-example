@@ -21,7 +21,7 @@ export default defineConfig({
     pluginModuleFederation({
       name: 'product',
       filename: 'remoteEntry.js',
-      exposes: { './ProductPage': './src/ProductPage.tsx' },
+      exposes: { './ProductPage': './src/pages/ProductPage/index.ts' },
       shared: {
         react: singleton,
         'react-dom': singleton,

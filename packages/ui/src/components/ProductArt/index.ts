@@ -1,0 +1,1 @@
+export { ProductArt } from './ProductArt';
