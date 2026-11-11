@@ -1,7 +1,7 @@
 # Zephyr Shop — micro-frontend storefront
 
 [![CI](https://github.com/eduardogc/zephyr-project-example/actions/workflows/ci.yml/badge.svg)](https://github.com/eduardogc/zephyr-project-example/actions/workflows/ci.yml)
-[![Render API](https://img.shields.io/website?url=RENDER_URL%2Fhealth&label=render%20api&up_message=healthy&down_message=down)](RENDER_URL/health)
+[![Render API](https://img.shields.io/website?url=https%3A%2F%2Fshop-api-3vgw.onrender.com%2Fhealth&label=render%20api&up_message=healthy&down_message=down)](https://shop-api-3vgw.onrender.com/health)
 [![Zephyr shell](https://img.shields.io/website?url=https%3A%2F%2Fgeceduardo-16-shop-shell-zephyr-project-example-e-1a39ef0a7-ze.zephyrcloud.app&label=zephyr%20shell&up_message=deployed&down_message=down)](https://geceduardo-16-shop-shell-zephyr-project-example-e-1a39ef0a7-ze.zephyrcloud.app)
 
 
@@ -71,7 +71,7 @@ Zephyr hosts the static frontends only; it does not run Node servers, so the API
 
 - **API → Render:** *New → Blueprint*, pick this repo (it reads `render.yaml`). Render redeploys on every push to `main`. Health check: `/health`.
 - **Frontends → Zephyr:** `pnpm build` builds and deploys all four apps (Nx orders: shared packages → remotes → shell). Requires a Zephyr login.
-- **API URL for the frontends:** they read `PUBLIC_API_URL` at build time (default `/api`, which only works through the dev proxy). Build with `PUBLIC_API_URL=https://<your-service>.onrender.com/api pnpm build` once the API is live.
+- **API URL for the frontends:** they read `PUBLIC_API_URL` at build time (default `/api`, which only works through the dev proxy). Build with `PUBLIC_API_URL=https://shop-api-3vgw.onrender.com/api pnpm build` once the API is live.
 - **CI:** `.github/workflows/ci.yml` runs `nx affected -t typecheck test` on every PR/branch.
 
 > The free Render plan has an ephemeral disk and sleeps when idle: the SQLite file is re-seeded on each deploy/restart. For persistent orders, use a paid plan with a disk mounted at `/data` and set `DB_FILE=/data/shop.sqlite`.
