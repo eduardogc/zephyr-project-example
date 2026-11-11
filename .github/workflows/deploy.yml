@@ -30,6 +30,10 @@ jobs:
   zephyr:
     needs: verify
     runs-on: ubuntu-latest
+    # As in https://docs.zephyr-cloud.io/features/ci-tokens : the secret is mapped to ZE_CI_TOKEN for the whole job.
+    env:
+      ZE_CI_TOKEN: ${{ secrets.ZEPHYR_CI_TOKEN || secrets.ZE_CI_TOKEN }} # docs name first, old name as fallback
+      ZE_FAIL_BUILD: true
     outputs:
       shell_url: ${{ steps.url.outputs.shell_url }}
     steps:
@@ -38,7 +42,7 @@ jobs:
       - uses: pnpm/action-setup@v4
         with: { version: 12.18.0 }
       - uses: actions/setup-node@v4
-        with: { node-version: 22, cache: pnpm }
+        with: { node-version: 24, cache: pnpm }
       - run: pnpm install --frozen-lockfile
 
       # The frontends bake the API URL in at build time. `API_URL` (repo variable) may be given with
@@ -54,20 +58,16 @@ jobs:
       - name: Check the Zephyr credentials
         run: |
           if [ -z "$ZE_CI_TOKEN" ]; then
-            echo "::error title=ZE_CI_TOKEN is empty::Add it as a repository SECRET (Settings > Secrets and variables > Actions > Secrets, not Variables) and make sure it is not scoped to an Environment this job does not use."
+            echo "::error title=No Zephyr CI token::Create a repository SECRET named ZEPHYR_CI_TOKEN (Settings > Secrets and variables > Actions > Secrets, not Variables) with a CI token from app.zephyr-cloud.io > Settings > Tokens > CI Tokens."
             exit 1
           fi
-          echo "::notice title=Zephyr credentials::ZE_CI_TOKEN present. Branch $(git rev-parse --abbrev-ref HEAD), commit $(git rev-parse --short HEAD), actor $GITHUB_ACTOR"
-        env:
-          ZE_CI_TOKEN: ${{ secrets.ZE_CI_TOKEN }}
+          echo "::notice title=Zephyr credentials::token present. Branch $(git rev-parse --abbrev-ref HEAD), commit $(git rev-parse --short HEAD), actor $GITHUB_ACTOR"
 
       # Nx orders it: shared packages -> remotes -> shell. Every `build` deploys to Zephyr.
       - name: Build and deploy to Zephyr
         shell: bash # explicit shell enables `pipefail`, so a failed build is not hidden by `tee`
         run: npx nx run-many -t build --projects=shop-catalog,shop-product,shop-cart,shop-shell --outputStyle=stream 2>&1 | tee build.log
         env:
-          ZE_CI_TOKEN: ${{ secrets.ZE_CI_TOKEN }}
-          ZE_FAIL_BUILD: 'true'
           CI: 'true'
 
       # Surfaces the interesting part of the log as an annotation (visible on the run summary page).

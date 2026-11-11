@@ -91,7 +91,7 @@ Zephyr hosts the static frontends only; it does not run Node servers, so the API
 - **CI:** `.github/workflows/ci.yml` runs `nx affected -t typecheck test` on every PR/branch.
 
 **One-time GitHub setup**
-1. Secret `ZE_CI_TOKEN`: Zephyr CI token (app.zephyr-cloud.io → Settings → Tokens → CI Tokens).
+1. Secret `ZEPHYR_CI_TOKEN`: Zephyr CI token (app.zephyr-cloud.io → Settings → Tokens → CI Tokens), mapped to `ZE_CI_TOKEN` in the workflow as in the [Zephyr docs](https://docs.zephyr-cloud.io/features/ci-tokens). The old name `ZE_CI_TOKEN` also works as a fallback.
    **Also link your GitHub account in Zephyr Cloud (Settings → Git Providers).** Zephyr maps the GitHub Actions user to a Zephyr user through that link; without it the token is rejected with "could not be exchanged for a Zephyr access token".
 2. Settings → Pages → **Source: GitHub Actions**.
 3. Optional variable `API_URL` (defaults to the Render URL above) if you move the API.
