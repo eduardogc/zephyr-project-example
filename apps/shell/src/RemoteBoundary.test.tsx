@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { lazy } from 'react';
+import { lazy, type ReactElement } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { RemoteBoundary } from './RemoteBoundary';
 
@@ -46,8 +46,8 @@ describe('RemoteBoundary', () => {
   });
 
   it('shows a fallback while a lazy remote is loading', async () => {
-    let resolve: (m: { default: () => JSX.Element }) => void = () => {};
-    const Lazy = lazy(() => new Promise<{ default: () => JSX.Element }>((r) => (resolve = r)));
+    let resolve: (m: { default: () => ReactElement }) => void = () => {};
+    const Lazy = lazy(() => new Promise<{ default: () => ReactElement }>((r) => (resolve = r)));
     render(<RemoteBoundary name="product"><Lazy /></RemoteBoundary>);
     expect(screen.queryByText('loaded')).not.toBeInTheDocument();
     resolve({ default: () => <p>loaded</p> });
