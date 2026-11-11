@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { formatPrice, type Order } from '@shop/types';
-import { Button, CheckCircleIcon, MinusIcon, PlusIcon, ProductArt, TrashIcon } from '@shop/ui';
+import { Button, CheckCircleIcon, MinusIcon, PlusIcon, TrashIcon } from '@shop/ui';
+import { ProductPhoto } from '@shop/ui/product-photo';
 import { cart, useCart } from './cartStore';
 import { CheckoutForm } from './CheckoutForm';
 
@@ -38,7 +39,7 @@ export default function CartPage() {
         <ul className="divide-y divide-border rounded-xl border border-border bg-surface">
           {items.map(({ product, quantity }) => (
             <li key={product.id} className="flex items-center gap-4 p-4">
-              <ProductArt emoji={product.emoji} hue={product.hue} className="size-16 rounded-lg text-3xl" />
+              <ProductPhoto product={product} className="size-16 shrink-0 rounded-lg text-3xl" />
               <div className="flex-1">
                 <Link to={`/products/${product.id}`} className="font-medium hover:underline">{product.name}</Link>
                 <p className="text-sm text-muted">{formatPrice(product.priceCents)}</p>

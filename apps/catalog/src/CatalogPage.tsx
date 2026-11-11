@@ -9,7 +9,8 @@ import { ProductCard } from './ProductCard';
 import { SearchBar } from './SearchBar';
 import { useDebounced } from './useDebounced';
 
-const GRID = 'grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 lg:gap-6';
+// Mobile: 1 giant card per row. Tablet: 2 columns. Desktop: 3 columns.
+const GRID = 'grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 lg:gap-6';
 
 /** Filter state lives in the URL, so every view is shareable and back/forward just works. */
 export default function CatalogPage() {
@@ -89,9 +90,9 @@ export default function CatalogPage() {
         <ErrorState message="We couldn't load the products." onRetry={() => refetch()} />
       ) : isPending ? (
         <ul className={GRID} aria-busy="true" aria-label="Loading products">
-          {Array.from({ length: 8 }, (_, i) => (
+          {Array.from({ length: 6 }, (_, i) => (
             <li key={i}>
-              <Skeleton className="aspect-[3/4]" />
+              <Skeleton className="aspect-[4/5] sm:aspect-[4/3]" />
             </li>
           ))}
         </ul>
@@ -100,8 +101,8 @@ export default function CatalogPage() {
       ) : (
         <>
           <ul aria-busy={busy} className={cn(GRID, 'motion-safe:transition-opacity', busy && 'pointer-events-none opacity-50')}>
-            {data.items.map((p) => (
-              <ProductCard key={p.id} product={p} />
+            {data.items.map((p, i) => (
+              <ProductCard key={p.id} product={p} eager={i < 3} />
             ))}
           </ul>
           {totalPages > 1 && (
