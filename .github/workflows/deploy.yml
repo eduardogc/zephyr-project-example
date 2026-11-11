@@ -50,13 +50,32 @@ jobs:
           echo "PUBLIC_API_URL=$ORIGIN/api" >> "$GITHUB_ENV"
           echo "API: $ORIGIN" >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Check the Zephyr credentials
+        run: |
+          if [ -z "$ZE_CI_TOKEN" ]; then
+            echo "::error title=ZE_CI_TOKEN is empty::Add it as a repository SECRET (Settings > Secrets and variables > Actions > Secrets, not Variables) and make sure it is not scoped to an Environment this job does not use."
+            exit 1
+          fi
+          echo "ZE_CI_TOKEN present (${#ZE_CI_TOKEN} chars)"
+          echo "Branch: $(git rev-parse --abbrev-ref HEAD) | commit: $(git rev-parse --short HEAD) | ref: $GITHUB_REF"
+        env:
+          ZE_CI_TOKEN: ${{ secrets.ZE_CI_TOKEN }}
+
       # Nx orders it: shared packages -> remotes -> shell. Every `build` deploys to Zephyr.
       - name: Build and deploy to Zephyr
         shell: bash # explicit shell enables `pipefail`, so a failed build is not hidden by `tee`
-        run: npx nx run-many -t build --projects=shop-catalog,shop-product,shop-cart,shop-shell --outputStyle=stream | tee build.log
+        run: npx nx run-many -t build --projects=shop-catalog,shop-product,shop-cart,shop-shell --outputStyle=stream 2>&1 | tee build.log
         env:
           ZE_CI_TOKEN: ${{ secrets.ZE_CI_TOKEN }}
           ZE_FAIL_BUILD: 'true'
+          CI: 'true'
+
+      # Surfaces the interesting part of the log as an annotation (visible on the run summary page).
+      - name: Show why the build failed
+        if: failure()
+        run: |
+          MSG=$(sed 's/\x1b\[[0-9;]*m//g' build.log | grep -iE 'zephyr|error|fail|auth|token|login|git|ZE[0-9]+' | tail -30 | cut -c1-260 | head -c 3500 | sed ':a;N;$!ba;s/\n/%0A/g')
+          echo "::error title=Build log (filtered)::${MSG:-no matching lines, see the full log}"
 
       - name: Read the shell URL from the build output
         id: url
