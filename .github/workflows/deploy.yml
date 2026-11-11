@@ -15,10 +15,6 @@ concurrency:
 permissions:
   contents: read
 
-env:
-  # Frontends bake the API URL in at build time. Override with the `API_URL` repo variable.
-  PUBLIC_API_URL: ${{ vars.API_URL || 'https://shop-api-3vgw.onrender.com/api' }}
-
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -44,6 +40,16 @@ jobs:
         with: { node-version: 22, cache: pnpm }
       - run: pnpm install --frozen-lockfile
 
+      # The frontends bake the API URL in at build time. `API_URL` (repo variable) may be given with
+      # or without a trailing `/api`; normalise it so both work.
+      - name: Resolve the API URL
+        run: |
+          ORIGIN="${{ vars.API_URL || 'https://shop-api-3vgw.onrender.com' }}"
+          ORIGIN="${ORIGIN%/}"; ORIGIN="${ORIGIN%/api}"
+          echo "API_ORIGIN=$ORIGIN" >> "$GITHUB_ENV"
+          echo "PUBLIC_API_URL=$ORIGIN/api" >> "$GITHUB_ENV"
+          echo "API: $ORIGIN" >> "$GITHUB_STEP_SUMMARY"
+
       # Nx orders it: shared packages -> remotes -> shell. Every `build` deploys to Zephyr.
       - name: Build and deploy to Zephyr
         shell: bash # explicit shell enables `pipefail`, so a failed build is not hidden by `tee`
@@ -64,7 +70,7 @@ jobs:
         run: |
           curl --fail --silent --show-error --location --max-time 30 -o /dev/null "${{ steps.url.outputs.shell_url }}"
           # The API sleeps on Render's free plan; give a cold start time to finish.
-          curl --fail --silent --show-error --retry 8 --retry-delay 10 --retry-all-errors --max-time 60 "${PUBLIC_API_URL%/api}/health"
+          curl --fail --silent --show-error --retry 8 --retry-delay 10 --retry-all-errors --max-time 60 "$API_ORIGIN/health"
           curl --fail --silent --show-error --max-time 30 "$PUBLIC_API_URL/products?pageSize=1" | grep -q '"items"'
 
   pages:
