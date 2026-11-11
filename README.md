@@ -1,16 +1,16 @@
 # Zephyr Shop — micro-frontend storefront
 
-[![CI](https://github.com/eduardogc/zephyr-project-example/actions/workflows/ci.yml/badge.svg)](https://github.com/eduardogc/zephyr-project-example/actions/workflows/ci.yml)
+[![Build & deploy](https://github.com/eduardogc/zephyr-project-example/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/eduardogc/zephyr-project-example/actions/workflows/deploy.yml)
 [![Render API](https://img.shields.io/website?url=https%3A%2F%2Fshop-api-3vgw.onrender.com%2Fhealth&label=render%20api&up_message=healthy&down_message=down)](https://shop-api-3vgw.onrender.com/health)
-[![Zephyr shell](https://img.shields.io/website?url=https%3A%2F%2Fgeceduardo-16-shop-shell-zephyr-project-example-e-1a39ef0a7-ze.zephyrcloud.app&label=zephyr%20shell&up_message=deployed&down_message=down)](https://geceduardo-16-shop-shell-zephyr-project-example-e-1a39ef0a7-ze.zephyrcloud.app)
-
-
-## Live demo
-**https://eduardogc.github.io/zephyr-project-example/** redirects to the newest production build on Zephyr Cloud (Zephyr URLs are versioned, so this is the stable link). The API runs on Render's free plan: the first request after idle can take ~30 s while it wakes up.
+[![Live demo](https://img.shields.io/website?url=https%3A%2F%2Feduardogc.github.io%2Fzephyr-project-example%2F&label=live%20demo&up_message=online&down_message=down)](https://eduardogc.github.io/zephyr-project-example/)
 
 A small but complete storefront built to showcase a modern full-stack setup:
 four independently deployable micro-frontends, a typed Fastify API and an Nx monorepo, shipped with [Zephyr Cloud](https://docs.zephyr-cloud.io).
 
+## Live demo
+**https://eduardogc.github.io/zephyr-project-example/** redirects to the newest production build on Zephyr Cloud (Zephyr URLs are versioned, so this is the stable link). The API runs on Render's free plan: the first request after idle can take ~30 s while it wakes up.
+
+## Structure
 ```
 apps/
   shell/     host: routing, layout, error isolation        (React 19 · React Router 7)   :2000
