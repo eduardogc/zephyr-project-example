@@ -9,7 +9,8 @@
     "test": "nx run-many -t test",
     "typecheck": "nx run-many -t typecheck",
     "graph": "nx graph",
-    "dev:stop": "lsof -ti tcp:2000,3001,3002,3003,4000 | xargs -r kill || true"
+    "dev:stop": "lsof -ti tcp:2000,3001,3002,3003,4000 | xargs -r kill || true",
+    "test:coverage": "nx run-many -t test --skip-nx-cache -- --coverage"
   },
   "devDependencies": {
     "nx": "^21.6.0",

@@ -63,6 +63,7 @@ export default function CatalogPage() {
           sort={sort}
           onCategory={(c) => update({ category: c })}
           onSort={(s) => update({ sort: s === 'featured' ? undefined : s })}
+          onClear={() => update({ category: undefined, sort: undefined })}
         />
       </div>
 

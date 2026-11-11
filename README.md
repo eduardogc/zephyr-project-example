@@ -5,6 +5,9 @@
 [![Zephyr shell](https://img.shields.io/website?url=https%3A%2F%2Fgeceduardo-16-shop-shell-zephyr-project-example-e-1a39ef0a7-ze.zephyrcloud.app&label=zephyr%20shell&up_message=deployed&down_message=down)](https://geceduardo-16-shop-shell-zephyr-project-example-e-1a39ef0a7-ze.zephyrcloud.app)
 
 
+## Live demo
+**https://eduardogc.github.io/zephyr-project-example/** redirects to the newest production build on Zephyr Cloud (Zephyr URLs are versioned, so this is the stable link). The API runs on Render's free plan: the first request after idle can take ~30 s while it wakes up.
+
 A small but complete storefront built to showcase a modern full-stack setup:
 four independently deployable micro-frontends, a typed Fastify API and an Nx monorepo, shipped with [Zephyr Cloud](https://docs.zephyr-cloud.io).
 
@@ -51,7 +54,8 @@ If pnpm reports ignored build scripts, approve them (`pnpm approve-builds`); `es
 | `pnpm dev` | Runs all apps in dev mode (`nx run-many -t dev`). Ports are fixed (shell 2000, catalog 3001, product 3002, cart 3003, api 4000); if one is taken it fails instead of moving |
 | `pnpm dev:stop` | Kills whatever is listening on those ports (stale dev servers) |
 | `pnpm build` | Typechecks, builds and **deploys every app to Zephyr** (Nx orders by dependency, caches results) |
-| `pnpm test` | Vitest for API, UI package and cart store |
+| `pnpm test` | Vitest across all 8 projects (API, shared packages, every frontend) |
+| `pnpm test:coverage` | Same, with a v8 coverage report per project (`coverage/`) |
 | `pnpm typecheck` | `tsc` for every project |
 | `pnpm graph` | Visualise the Nx project graph |
 | `npx nx affected -t test` | Only test what your changes touch |
@@ -71,9 +75,14 @@ Each app has an `AGENTS.md` describing its purpose, commands and conventions for
 Zephyr hosts the static frontends only; it does not run Node servers, so the API is deployed to **Render**.
 
 - **API → Render:** *New → Blueprint*, pick this repo (it reads `render.yaml`). Render redeploys on every push to `main`. Health check: `/health`.
-- **Frontends → Zephyr:** `pnpm build` builds and deploys all four apps (Nx orders: shared packages → remotes → shell). Requires a Zephyr login.
-- **API URL for the frontends:** they read `PUBLIC_API_URL` at build time (default `/api`, which only works through the dev proxy). Build with `PUBLIC_API_URL=https://shop-api-3vgw.onrender.com/api pnpm build` once the API is live.
+- **Frontends → Zephyr:** `.github/workflows/deploy.yml` runs on every push to `main`: typecheck and tests, then `nx run-many -t build` (shared packages → remotes → shell, each deployed to Zephyr), then a smoke test of the shell and the API. Locally: `PUBLIC_API_URL=https://shop-api-3vgw.onrender.com/api pnpm build` (needs a Zephyr login).
+- **Stable demo URL → GitHub Pages:** after Zephyr, a small Pages site redirects to the newest shell URL.
 - **CI:** `.github/workflows/ci.yml` runs `nx affected -t typecheck test` on every PR/branch.
+
+**One-time GitHub setup**
+1. Secret `ZE_CI_TOKEN`: Zephyr CI token (app.zephyr-cloud.io → Settings → Tokens → CI Tokens).
+2. Settings → Pages → **Source: GitHub Actions**.
+3. Optional variable `API_URL` (defaults to the Render URL above) if you move the API.
 
 > The free Render plan has an ephemeral disk and sleeps when idle: the SQLite file is re-seeded on each deploy/restart. For persistent orders, use a paid plan with a disk mounted at `/data` and set `DB_FILE=/data/shop.sqlite`.
 

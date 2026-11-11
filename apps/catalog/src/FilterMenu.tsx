@@ -16,6 +16,8 @@ type Props = {
   sort: Sort;
   onCategory: (c: Category | undefined) => void;
   onSort: (s: Sort) => void;
+  /** Clears every filter in ONE update (two back-to-back URL updates would overwrite each other). */
+  onClear: () => void;
 };
 
 function RadioRow({ name, label, checked, onChange }: { name: string; label: string; checked: boolean; onChange: () => void }) {
@@ -28,7 +30,7 @@ function RadioRow({ name, label, checked, onChange }: { name: string; label: str
 }
 
 /** Icon button that opens a dropdown with category + sort. Changes apply immediately. */
-export function FilterMenu({ category, sort, onCategory, onSort }: Props) {
+export function FilterMenu({ category, sort, onCategory, onSort, onClear }: Props) {
   const activeCount = (category ? 1 : 0) + (sort !== 'featured' ? 1 : 0);
 
   return (
@@ -66,10 +68,7 @@ export function FilterMenu({ category, sort, onCategory, onSort }: Props) {
           <Button
             variant="ghost"
             className="w-full"
-            onClick={() => {
-              onCategory(undefined);
-              onSort('featured');
-            }}
+            onClick={onClear}
           >
             Clear filters
           </Button>

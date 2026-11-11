@@ -27,7 +27,7 @@ describe('catalog accessibility', () => {
   });
 
   it('FilterMenu: labelled trigger, grouped radios, no axe violations when open', async () => {
-    const { container } = render(<FilterMenu category="audio" sort="featured" onCategory={() => {}} onSort={() => {}} />);
+    const { container } = render(<FilterMenu category="audio" sort="featured" onCategory={() => {}} onSort={() => {}} onClear={() => {}} />);
     const trigger = screen.getByRole('button', { name: 'Filters, 1 active' });
     expect(trigger).toHaveAttribute('aria-expanded', 'false');
     await userEvent.click(trigger);

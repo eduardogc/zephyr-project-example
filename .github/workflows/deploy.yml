@@ -1,0 +1,103 @@
+name: Deploy demo
+
+# Production build -> Zephyr Cloud (needs the ZE_CI_TOKEN secret), then a stable GitHub Pages URL
+# that redirects to the newest Zephyr shell (Zephyr URLs are versioned per deploy).
+# The API is deployed separately by Render (render.yaml, auto-deploys on push).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-demo
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  # Frontends bake the API URL in at build time. Override with the `API_URL` repo variable.
+  PUBLIC_API_URL: ${{ vars.API_URL || 'https://shop-api-3vgw.onrender.com/api' }}
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 12.18.0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: npx nx run-many -t typecheck test
+
+  zephyr:
+    needs: verify
+    runs-on: ubuntu-latest
+    outputs:
+      shell_url: ${{ steps.url.outputs.shell_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 12.18.0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+
+      # Nx orders it: shared packages -> remotes -> shell. Every `build` deploys to Zephyr.
+      - name: Build and deploy to Zephyr
+        shell: bash # explicit shell enables `pipefail`, so a failed build is not hidden by `tee`
+        run: npx nx run-many -t build --projects=shop-catalog,shop-product,shop-cart,shop-shell --outputStyle=stream | tee build.log
+        env:
+          ZE_CI_TOKEN: ${{ secrets.ZE_CI_TOKEN }}
+          ZE_FAIL_BUILD: 'true'
+
+      - name: Read the shell URL from the build output
+        id: url
+        run: |
+          URL=$(sed 's/\x1b\[[0-9;]*m//g' build.log | grep -oE 'https://[A-Za-z0-9.-]*shop-shell[A-Za-z0-9.-]*\.zephyrcloud\.app' | tail -1)
+          if [ -z "$URL" ]; then echo "::error::Could not find the Zephyr shell URL in the build output"; exit 1; fi
+          echo "shell_url=$URL" >> "$GITHUB_OUTPUT"
+          echo "### Zephyr shell: $URL" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Smoke test the production build
+        run: |
+          curl --fail --silent --show-error --location --max-time 30 -o /dev/null "${{ steps.url.outputs.shell_url }}"
+          # The API sleeps on Render's free plan; give a cold start time to finish.
+          curl --fail --silent --show-error --retry 8 --retry-delay 10 --retry-all-errors --max-time 60 "${PUBLIC_API_URL%/api}/health"
+          curl --fail --silent --show-error --max-time 30 "$PUBLIC_API_URL/products?pageSize=1" | grep -q '"items"'
+
+  pages:
+    needs: zephyr
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Build the redirect page
+        run: |
+          mkdir site
+          cat > site/index.html <<HTML
+          <!doctype html>
+          <html lang="en">
+            <head>
+              <meta charset="utf-8" />
+              <meta name="viewport" content="width=device-width, initial-scale=1" />
+              <meta http-equiv="refresh" content="0; url=${{ needs.zephyr.outputs.shell_url }}" />
+              <link rel="canonical" href="${{ needs.zephyr.outputs.shell_url }}" />
+              <title>Zephyr Shop demo</title>
+            </head>
+            <body>
+              <p>Redirecting to the latest deployment on Zephyr Cloud…</p>
+              <p><a href="${{ needs.zephyr.outputs.shell_url }}">Open the demo</a></p>
+            </body>
+          </html>
+          HTML
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: site }
+      - id: deployment
+        uses: actions/deploy-pages@v4
