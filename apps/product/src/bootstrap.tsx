@@ -10,7 +10,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={new QueryClient()}>
       <BrowserRouter>
-        <main className="mx-auto max-w-6xl p-4">
+        <main className="mx-auto max-w-7xl p-4">
           <Routes>
             <Route path="/products/:id" element={<ProductPage />} />
           </Routes>

@@ -11,6 +11,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.10",
     "@shop/api-client": "workspace:*",
     "@shop/types": "workspace:*",
     "@shop/ui": "workspace:*",

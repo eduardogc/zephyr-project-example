@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router';
 import { api, ApiRequestError } from '@shop/api-client';
 import { CART_ADD_EVENT, formatPrice, type CartAddDetail } from '@shop/types';
-import { Button, ErrorState, ProductArt, Rating, Skeleton } from '@shop/ui';
+import { Button, ChevronLeftIcon, ErrorState, MinusIcon, PlusIcon, ProductArt, Rating, ShoppingCartIcon, Skeleton } from '@shop/ui';
 
 export default function ProductPage() {
   const { id = '' } = useParams();
@@ -57,7 +57,10 @@ export default function ProductPage() {
   return (
     <article className="space-y-6">
       <nav aria-label="Breadcrumb" className="text-sm text-muted">
-        <Link to="/" className="hover:underline">Shop</Link> / <span className="capitalize">{product.category}</span>
+        <Link to="/" className="inline-flex items-center gap-1 hover:underline">
+          <ChevronLeftIcon aria-hidden className="size-4" /> Shop
+        </Link>{' '}
+        / <span className="capitalize">{product.category}</span>
       </nav>
       <div className="grid gap-8 md:grid-cols-2">
         <ProductArt emoji={product.emoji} hue={product.hue} className="rounded-2xl text-9xl" />
@@ -74,12 +77,12 @@ export default function ProductPage() {
 
           <div className="flex items-center gap-4">
             <div role="group" aria-label="Quantity" className="flex items-center rounded-lg border border-border">
-              <Button variant="ghost" aria-label="Decrease quantity" disabled={soldOut || quantity <= 1} onClick={() => setQuantity(quantity - 1)}>−</Button>
+              <Button variant="ghost" aria-label="Decrease quantity" disabled={soldOut || quantity <= 1} onClick={() => setQuantity(quantity - 1)}><MinusIcon aria-hidden className="size-4" /></Button>
               <output aria-live="polite" className="w-8 text-center">{soldOut ? 0 : quantity}</output>
-              <Button variant="ghost" aria-label="Increase quantity" disabled={soldOut || quantity >= max} onClick={() => setQuantity(quantity + 1)}>+</Button>
+              <Button variant="ghost" aria-label="Increase quantity" disabled={soldOut || quantity >= max} onClick={() => setQuantity(quantity + 1)}><PlusIcon aria-hidden className="size-4" /></Button>
             </div>
             <Button disabled={soldOut} onClick={addToCart} className="flex-1 py-3">
-              Add to cart
+              <ShoppingCartIcon aria-hidden className="size-5" /> Add to cart
             </Button>
           </div>
           <p role="status" className="h-5 text-sm text-brand">

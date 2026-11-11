@@ -11,7 +11,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={client}>
       <BrowserRouter>
-        <main className="mx-auto max-w-6xl p-4">
+        <main className="mx-auto max-w-7xl p-4">
           <CatalogPage />
         </main>
       </BrowserRouter>

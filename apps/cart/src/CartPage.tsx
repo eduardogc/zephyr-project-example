@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { formatPrice, type Order } from '@shop/types';
-import { Button, ProductArt } from '@shop/ui';
+import { Button, CheckCircleIcon, MinusIcon, PlusIcon, ProductArt, TrashIcon } from '@shop/ui';
 import { cart, useCart } from './cartStore';
 import { CheckoutForm } from './CheckoutForm';
 
@@ -12,7 +12,7 @@ export default function CartPage() {
   if (placed) {
     return (
       <div role="status" className="py-16 text-center">
-        <p className="text-5xl">🎉</p>
+        <CheckCircleIcon aria-hidden className="mx-auto size-16 text-brand" />
         <h1 className="mt-4 text-2xl font-bold">Thanks for your order!</h1>
         <p className="mt-2 text-muted">
           Order <strong>{placed.id}</strong> · {formatPrice(placed.totalCents)}
@@ -44,12 +44,12 @@ export default function CartPage() {
                 <p className="text-sm text-muted">{formatPrice(product.priceCents)}</p>
               </div>
               <div role="group" aria-label={`Quantity of ${product.name}`} className="flex items-center">
-                <Button variant="ghost" aria-label="Decrease quantity" onClick={() => cart.setQuantity(product.id, quantity - 1)}>−</Button>
+                <Button variant="ghost" aria-label="Decrease quantity" onClick={() => cart.setQuantity(product.id, quantity - 1)}><MinusIcon aria-hidden className="size-4" /></Button>
                 <output className="w-6 text-center">{quantity}</output>
-                <Button variant="ghost" aria-label="Increase quantity" disabled={quantity >= Math.min(10, product.stock)} onClick={() => cart.setQuantity(product.id, quantity + 1)}>+</Button>
+                <Button variant="ghost" aria-label="Increase quantity" disabled={quantity >= Math.min(10, product.stock)} onClick={() => cart.setQuantity(product.id, quantity + 1)}><PlusIcon aria-hidden className="size-4" /></Button>
               </div>
               <p className="w-20 text-right font-medium">{formatPrice(product.priceCents * quantity)}</p>
-              <Button variant="ghost" aria-label={`Remove ${product.name}`} onClick={() => cart.setQuantity(product.id, 0)}>✕</Button>
+              <Button variant="ghost" aria-label={`Remove ${product.name}`} onClick={() => cart.setQuantity(product.id, 0)}><TrashIcon aria-hidden className="size-5" /></Button>
             </li>
           ))}
         </ul>

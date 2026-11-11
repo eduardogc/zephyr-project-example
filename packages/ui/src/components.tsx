@@ -1,5 +1,6 @@
 import type { ButtonHTMLAttributes, HTMLAttributes } from 'react';
 import { cn } from './cn';
+import { ExclamationTriangleIcon, StarIcon } from './icons';
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'ghost' | 'outline' };
 
@@ -28,6 +29,7 @@ export function Skeleton({ className, ...props }: HTMLAttributes<HTMLDivElement>
 export function ErrorState({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
     <div role="alert" className="rounded-xl border border-danger/40 bg-danger/10 p-6 text-center">
+      <ExclamationTriangleIcon aria-hidden className="mx-auto mb-2 size-8 text-danger" />
       <p className="font-medium text-danger">{message}</p>
       {onRetry && (
         <Button variant="outline" className="mt-3" onClick={onRetry}>
@@ -54,7 +56,8 @@ export function ProductArt({ emoji, hue, className }: { emoji: string; hue: numb
 export function Rating({ value }: { value: number }) {
   return (
     <span className="text-sm text-muted" aria-label={`Rated ${value.toFixed(1)} out of 5`}>
-      <span aria-hidden className="text-amber-500">★</span> {value.toFixed(1)}
+      <StarIcon aria-hidden className="mr-0.5 inline size-4 -translate-y-px text-amber-500" />
+      {value.toFixed(1)}
     </span>
   );
 }

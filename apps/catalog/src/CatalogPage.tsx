@@ -2,17 +2,14 @@ import { useEffect, useState } from 'react';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router';
 import { api } from '@shop/api-client';
-import { CATEGORIES, SORTS, categorySchema, productQuerySchema } from '@shop/types';
-import { Button, ErrorState, Skeleton, cn } from '@shop/ui';
+import { categorySchema, productQuerySchema } from '@shop/types';
+import { Button, ChevronLeftIcon, ChevronRightIcon, ErrorState, Skeleton, XMarkIcon, cn } from '@shop/ui';
+import { FilterMenu } from './FilterMenu';
 import { ProductCard } from './ProductCard';
+import { SearchBar } from './SearchBar';
 import { useDebounced } from './useDebounced';
 
-const SORT_LABELS: Record<(typeof SORTS)[number], string> = {
-  featured: 'Featured',
-  'price-asc': 'Price: low to high',
-  'price-desc': 'Price: high to low',
-  rating: 'Top rated',
-};
+const GRID = 'grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 lg:gap-6';
 
 /** Filter state lives in the URL, so every view is shareable and back/forward just works. */
 export default function CatalogPage() {
@@ -55,49 +52,35 @@ export default function CatalogPage() {
         Shop all products
       </h1>
 
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <input
-          type="search"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search products…"
-          aria-label="Search products"
-          className="w-full rounded-lg border border-border bg-surface px-3 py-2 md:max-w-xs"
+      <div className="flex items-center gap-3">
+        <SearchBar value={search} onChange={setSearch} />
+        <FilterMenu
+          category={category}
+          sort={sort}
+          onCategory={(c) => update({ category: c })}
+          onSort={(s) => update({ sort: s === 'featured' ? undefined : s })}
         />
-        <label className="flex items-center gap-2 text-sm">
-          Sort by
-          <select
-            value={sort}
-            onChange={(e) => update({ sort: e.target.value === 'featured' ? undefined : e.target.value })}
-            className="rounded-lg border border-border bg-surface px-3 py-2"
-          >
-            {SORTS.map((s) => (
-              <option key={s} value={s}>
-                {SORT_LABELS[s]}
-              </option>
-            ))}
-          </select>
-        </label>
       </div>
 
-      <div role="group" aria-label="Filter by category" className="flex flex-wrap gap-2">
-        {[undefined, ...CATEGORIES].map((c) => (
-          <Button
-            key={c ?? 'all'}
-            variant={category === c ? 'primary' : 'outline'}
-            aria-pressed={category === c}
-            className="capitalize"
-            onClick={() => update({ category: c })}
+      {category && (
+        <p className="flex items-center gap-2 text-sm">
+          <span className="text-muted">Category:</span>
+          <button
+            type="button"
+            onClick={() => update({ category: undefined })}
+            aria-label={`Remove category filter ${category}`}
+            className="inline-flex items-center gap-1 rounded-full bg-brand/10 px-3 py-1 font-medium capitalize text-brand hover:bg-brand/20"
           >
-            {c ?? 'All'}
-          </Button>
-        ))}
-      </div>
+            {category}
+            <XMarkIcon aria-hidden className="size-4" />
+          </button>
+        </p>
+      )}
 
       {isError ? (
         <ErrorState message="We couldn't load the products." onRetry={() => refetch()} />
       ) : isPending ? (
-        <ul className="grid grid-cols-2 gap-4 md:grid-cols-4" aria-busy="true" aria-label="Loading products">
+        <ul className={GRID} aria-busy="true" aria-label="Loading products">
           {Array.from({ length: 8 }, (_, i) => (
             <li key={i}>
               <Skeleton className="aspect-[3/4]" />
@@ -111,7 +94,7 @@ export default function CatalogPage() {
           <p className="text-sm text-muted" aria-live="polite">
             {data.total} product{data.total === 1 ? '' : 's'}
           </p>
-          <ul className={cn('grid grid-cols-2 gap-4 md:grid-cols-4', isPlaceholderData && 'opacity-60')}>
+          <ul className={cn(GRID, isPlaceholderData && 'opacity-60')}>
             {data.items.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
@@ -119,13 +102,13 @@ export default function CatalogPage() {
           {totalPages > 1 && (
             <nav aria-label="Pagination" className="flex items-center justify-center gap-4">
               <Button variant="outline" disabled={page <= 1} onClick={() => update({ page: String(page - 1) }, false)}>
-                Previous
+                <ChevronLeftIcon aria-hidden className="size-4" /> Previous
               </Button>
               <span className="text-sm">
                 Page {page} of {totalPages}
               </span>
               <Button variant="outline" disabled={page >= totalPages} onClick={() => update({ page: String(page + 1) }, false)}>
-                Next
+                Next <ChevronRightIcon aria-hidden className="size-4" />
               </Button>
             </nav>
           )}
