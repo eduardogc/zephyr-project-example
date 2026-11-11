@@ -1,0 +1,41 @@
+/* Design tokens shared by every micro-frontend. Import after `@import "tailwindcss"`. */
+:root {
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --brand: #4f46e5;
+  --brand-contrast: #ffffff;
+  --danger: #dc2626;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b1020;
+    --surface: #131a2e;
+    --text: #e8ecf5;
+    --muted: #93a0b8;
+    --border: #25304a;
+    --brand: #818cf8;
+    --brand-contrast: #0b1020;
+    --danger: #f87171;
+  }
+}
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-brand: var(--brand);
+  --color-brand-contrast: var(--brand-contrast);
+  --color-danger: var(--danger);
+}
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+@keyframes shop-pulse { 50% { opacity: 0.45; } }
+.shop-skeleton { animation: shop-pulse 1.4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .shop-skeleton { animation: none; } }

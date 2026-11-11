@@ -1,0 +1,15 @@
+# Render Blueprint for the Fastify API. Frontends are deployed by Zephyr, not Render.
+services:
+  - type: web
+    name: shop-api
+    runtime: node
+    plan: free
+    buildCommand: corepack enable && pnpm install --frozen-lockfile --filter shop-api...
+    startCommand: pnpm --filter shop-api start
+    healthCheckPath: /health
+    autoDeploy: false # deployed from GitHub Actions via the deploy hook
+    envVars:
+      - key: NODE_VERSION
+        value: 22.15.1
+      - key: DB_FILE
+        value: /tmp/shop.sqlite # free plan has an ephemeral disk; see README

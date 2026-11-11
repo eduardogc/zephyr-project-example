@@ -1,0 +1,39 @@
+import path from 'node:path';
+import { defineConfig } from '@rsbuild/core';
+import { pluginReact } from '@rsbuild/plugin-react';
+import { pluginModuleFederation } from '@module-federation/rsbuild-plugin';
+import { withZephyr } from 'zephyr-rsbuild-plugin';
+
+const singleton = { singleton: true } as const;
+
+export default defineConfig({
+  html: { title: 'Shop · shell' },
+  output: { assetPrefix: 'auto' },
+  source: {
+    // Workspace packages ship TypeScript source; let Rsbuild compile them.
+    include: [path.resolve(__dirname, '../../packages')],
+  },
+  plugins: [
+    pluginReact(),
+    pluginModuleFederation({
+      name: 'shell',
+      filename: 'remoteEntry.js',
+      remotes: {
+        catalog: 'catalog@http://localhost:3001/mf-manifest.json',
+        product: 'product@http://localhost:3002/mf-manifest.json',
+        cart: 'cart@http://localhost:3003/mf-manifest.json',
+      },
+      shared: {
+        react: singleton,
+        'react-dom': singleton,
+        'react-router': singleton,
+        '@tanstack/react-query': singleton,
+      },
+    }),
+    withZephyr(),
+  ],
+  server: {
+    port: 2000,
+    proxy: { '/api': 'http://localhost:4000' },
+  },
+});

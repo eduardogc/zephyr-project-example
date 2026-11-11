@@ -1,0 +1,14 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "namedInputs": {
+    "default": ["{projectRoot}/**/*"],
+    "production": ["default", "!{projectRoot}/**/*.test.ts", "!{projectRoot}/**/*.test.tsx"]
+  },
+  "targetDefaults": {
+    "build": { "dependsOn": ["^build", "typecheck"], "inputs": ["production", "^production"], "outputs": ["{projectRoot}/dist"], "cache": true },
+    "typecheck": { "dependsOn": ["^typecheck"], "cache": true },
+    "test": { "inputs": ["default", "^production"], "cache": true },
+    "dev": { "cache": false }
+  },
+  "defaultBase": "main"
+}

@@ -1,0 +1,32 @@
+name: Deploy frontends (Zephyr)
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - apps/api/**
+      - render.yaml
+      - .github/workflows/deploy-api.yml
+      - '**.md'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-frontends
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 12.18.0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: npx nx run-many -t typecheck test
+      # Nx orders the build: shared packages -> remotes -> shell. Each `build` deploys to Zephyr.
+      - run: npx nx run-many -t build --projects=shop-shell,shop-catalog,shop-product,shop-cart
+        env:
+          ZE_SECRET_TOKEN: ${{ secrets.ZE_SECRET_TOKEN }}
+          PUBLIC_API_URL: ${{ vars.API_URL }}
