@@ -48,7 +48,8 @@ If pnpm reports ignored build scripts, approve them (`pnpm approve-builds`); `es
 ## Scripts
 | Command | What it does |
 |---|---|
-| `pnpm dev` | Runs all apps in dev mode (`nx run-many -t dev`) |
+| `pnpm dev` | Runs all apps in dev mode (`nx run-many -t dev`). Ports are fixed (shell 2000, catalog 3001, product 3002, cart 3003, api 4000); if one is taken it fails instead of moving |
+| `pnpm dev:stop` | Kills whatever is listening on those ports (stale dev servers) |
 | `pnpm build` | Typechecks, builds and **deploys every app to Zephyr** (Nx orders by dependency, caches results) |
 | `pnpm test` | Vitest for API, UI package and cart store |
 | `pnpm typecheck` | `tsc` for every project |

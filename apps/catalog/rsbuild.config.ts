@@ -33,6 +33,7 @@ export default defineConfig({
   ],
   server: {
     port: 3001,
+    strictPort: true, // fail if the port is taken: the shell hard-codes these remote URLs
     proxy: { '/api': 'http://localhost:4000' },
   },
 });
