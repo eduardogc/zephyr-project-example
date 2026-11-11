@@ -3,12 +3,81 @@
 [![Build & deploy](https://github.com/eduardogc/zephyr-project-example/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/eduardogc/zephyr-project-example/actions/workflows/deploy.yml)
 [![Render API](https://img.shields.io/website?url=https%3A%2F%2Fshop-api-3vgw.onrender.com%2Fhealth&label=render%20api&up_message=healthy&down_message=down)](https://shop-api-3vgw.onrender.com/health)
 [![Live demo](https://img.shields.io/website?url=https%3A%2F%2Feduardogc.github.io%2Fzephyr-project-example%2F&label=live%20demo&up_message=online&down_message=down)](https://eduardogc.github.io/zephyr-project-example/)
+[![Built with Nx](https://img.shields.io/badge/built%20with-Nx-143055?logo=nx&logoColor=white)](https://nx.dev)
 
 A small but complete storefront built to showcase a modern full-stack setup:
-four independently deployable micro-frontends, a typed Fastify API and an Nx monorepo, shipped with [Zephyr Cloud](https://docs.zephyr-cloud.io).
+four independently deployable micro-frontends, a typed Fastify API and shared libraries, all in one **[Nx](https://nx.dev) monorepo** (pnpm workspaces + Nx 21), shipped with [Zephyr Cloud](https://docs.zephyr-cloud.io). [How Nx is used here](#nx-monorepo)
 
 ## Live demo
 **https://eduardogc.github.io/zephyr-project-example/** redirects to the newest production build on Zephyr Cloud (Zephyr URLs are versioned, so this is the stable link). The API runs on Render's free plan: the first request after idle can take ~30 s while it wakes up.
+
+## Nx monorepo
+This is an **Nx 21 workspace** on top of pnpm workspaces. pnpm links the packages together; **Nx adds the task graph on top**: it knows which project depends on which, runs tasks in the right order, caches results and can limit work to what a change touches. There are 8 projects:
+
+| Project | Kind (`nx` tag) | Depends on |
+|---|---|---|
+| `shop-shell` | host (`type:host`) | the 3 remotes, `@shop/ui`, `@shop/api-client`, `@shop/types` |
+| `shop-catalog`, `shop-product`, `shop-cart` | remotes (`type:remote`) | `@shop/ui`, `@shop/api-client`, `@shop/types` |
+| `shop-api` | API (`type:api`) | `@shop/types` |
+| `@shop/ui`, `@shop/api-client` | libraries (`type:lib`) | `@shop/types` |
+| `@shop/types` | library (`type:lib`) | nothing |
+
+```
+              shop-shell                      ← waits for the remotes (implicit dependency, see below)
+          ╱       │        ╲
+ shop-catalog  shop-product  shop-cart
+          ╲       │        ╱
+        @shop/ui · @shop/api-client           shop-api
+                  ╲                            ╱
+                   ╰────── @shop/types ───────╯
+```
+See it live with `pnpm graph` (interactive graph in the browser).
+
+### How it is configured
+Projects are **inferred from each `package.json`** (its scripts become Nx targets), so there are no `project.json` files. The rules live in two places:
+- **`nx.json`**: the defaults for every project (below).
+- **the `nx` block of each `package.json`**: tags, `implicitDependencies`, and per-project overrides.
+
+| Target | Runs | Waits for | Cached |
+|---|---|---|---|
+| `typecheck` | `tsc` | `typecheck` of its dependencies | yes |
+| `test` | Vitest | | yes (re-runs only when its own files or its dependencies' source change) |
+| `build` | `rsbuild build` (frontends) | `build` of its dependencies, then its own `typecheck` | API: yes. **Frontends: no** (see below) |
+| `dev` | dev servers | | never |
+
+Decisions worth knowing:
+- **Frontend `build` is deliberately not cached.** With Zephyr, building *is* deploying. A cached replay would skip the deploy and report success.
+- **`shop-shell` has `implicitDependencies` on the three remotes.** Nothing imports them (they are federated at runtime), but the shell's Zephyr build resolves each remote's deployed URL, so the remotes must deploy first. This is what makes Nx build catalog, product and cart before the shell.
+- **Tags** (`type:host`, `type:remote`, `type:api`, `type:lib`) document the architecture and are ready for Nx's module-boundary lint rule. They are not enforced yet (there is no ESLint in this repo).
+
+### Commands
+```bash
+pnpm dev                              # nx run-many -t dev: API + shell + 3 remotes in parallel
+pnpm build                            # nx run-many -t build: libraries -> remotes -> shell, each deployed to Zephyr
+pnpm test                             # nx run-many -t test (all 8 projects)
+pnpm typecheck                        # nx run-many -t typecheck
+pnpm graph                            # nx graph: interactive project graph
+
+npx nx build shop-cart                # one project (its dependencies run first)
+npx nx test shop-api                  # one project's tests
+npx nx show project shop-shell        # targets, inputs and dependencies of a project
+npx nx affected -t typecheck test     # only what changed compared to the base branch (what CI runs on PRs)
+npx nx reset                          # clear the cache and the Nx daemon
+```
+
+### What you get
+**Caching.** Running all tests twice on a laptop: about **9 s** the first time, about **1 s** the second (every project replayed from cache). CI uses the same graph.
+
+**Only what a change touches** (`npx nx show projects --affected --files=<file>`):
+
+| You change | Nx re-checks |
+|---|---|
+| `packages/types` | all 8 projects (everything depends on it) |
+| `packages/ui` | `@shop/ui` + the 3 remotes + the shell |
+| `apps/cart` | `shop-cart` + `shop-shell` |
+| `apps/api` | `shop-api` only |
+
+**In CI** (`.github/workflows/`): `ci.yml` runs `nx affected -t typecheck test` on pull requests; `deploy.yml` runs `nx run-many -t typecheck test` and then `nx run-many -t build`, relying on the task graph for the order above.
 
 ## Structure
 ```
@@ -41,7 +110,7 @@ apps/api/src/          modules/<feature>/ {routes, service, repository}, db/, er
 - **Decoupled remotes**: `product` → `cart` communication is a typed `window` event (`CART_ADD_EVENT`), not an import.
 - **End-to-end types**: zod schemas in `@shop/types` validate API input *and* API responses on the client.
 - **Real backend behaviour**: layered API (routes → services → repositories → Drizzle), typed business/server errors, and order creation that is transactional and race-safe (concurrent checkouts can't oversell).
-- **Nx**: task graph, caching (`nx build`, `nx test`), `nx graph`, `nx affected -t test`.
+- **Nx**: task graph, ordered builds, caching and `affected` runs across 8 projects. Details and commands: [Nx monorepo](#nx-monorepo).
 - **Tests**: Vitest for API (Fastify `inject`), UI components (Testing Library) and the cart store.
 
 ## Prerequisites
@@ -64,7 +133,7 @@ If pnpm reports ignored build scripts, approve them (`pnpm approve-builds`); `es
 |---|---|
 | `pnpm dev` | Runs all apps in dev mode (`nx run-many -t dev`). Ports are fixed (shell 2000, catalog 3001, product 3002, cart 3003, api 4000); if one is taken it fails instead of moving |
 | `pnpm dev:stop` | Kills whatever is listening on those ports (stale dev servers) |
-| `pnpm build` | Typechecks, builds and **deploys every app to Zephyr** (Nx orders by dependency, caches results) |
+| `pnpm build` | Typechecks, builds and **deploys every app to Zephyr** (Nx orders it: libraries, remotes, then the shell; frontend builds are never cached because they deploy) |
 | `pnpm test` | Vitest across all 8 projects (API, shared packages, every frontend) |
 | `pnpm test:coverage` | Same, with a v8 coverage report per project (`coverage/`) |
 | `pnpm typecheck` | `tsc` for every project |
