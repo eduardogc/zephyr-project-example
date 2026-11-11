@@ -8,6 +8,7 @@
   --brand: #4f46e5;
   --brand-contrast: #ffffff;
   --danger: #dc2626;
+  --warning: #b45309; /* 5:1 on white */
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -19,6 +20,7 @@
     --brand: #818cf8;
     --brand-contrast: #0b1020;
     --danger: #f87171;
+    --warning: #fbbf24;
   }
 }
 @theme inline {
@@ -30,6 +32,7 @@
   --color-brand: var(--brand);
   --color-brand-contrast: var(--brand-contrast);
   --color-danger: var(--danger);
+  --color-warning: var(--warning);
 }
 body {
   background: var(--bg);
@@ -39,3 +42,18 @@ body {
 @keyframes shop-pulse { 50% { opacity: 0.45; } }
 .shop-skeleton { animation: shop-pulse 1.4s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .shop-skeleton { animation: none; } }
+
+/* Visible keyboard focus everywhere, even on elements that forget to style it. */
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+/* Indeterminate progress bar shown while searching / filtering. */
+@keyframes shop-progress { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+.shop-progress { position: relative; height: 3px; overflow: hidden; border-radius: 9999px; background: var(--border); }
+.shop-progress::after {
+  content: ''; position: absolute; inset: 0; width: 40%; border-radius: inherit; background: var(--brand);
+  animation: shop-progress 1.1s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .shop-progress::after { animation: none; width: 100%; opacity: 0.6; }
+  * { scroll-behavior: auto !important; }
+}

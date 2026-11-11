@@ -75,3 +75,9 @@ Zephyr hosts the static frontends only; it does not run Node servers, so the API
 - **CI:** `.github/workflows/ci.yml` runs `nx affected -t typecheck test` on every PR/branch.
 
 > The free Render plan has an ephemeral disk and sleeps when idle: the SQLite file is re-seeded on each deploy/restart. For persistent orders, use a paid plan with a disk mounted at `/data` and set `DB_FILE=/data/shop.sqlite`.
+
+## Credits
+Product photos are from [Unsplash](https://unsplash.com) (free licence); photographers are credited on each product page and in `apps/product/src/productImages.ts`. The images are bundled with the `product` remote, so Zephyr serves them from its edge.
+
+## Accessibility
+Skip link, landmarks, focus + title management on route changes, labelled controls and fieldsets, live regions for search/filter status, visible focus, reduced-motion support and AA-contrast tokens. `pnpm test` runs axe checks on the catalog components.

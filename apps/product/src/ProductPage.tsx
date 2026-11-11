@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router';
 import { api, ApiRequestError } from '@shop/api-client';
 import { CART_ADD_EVENT, formatPrice, type CartAddDetail } from '@shop/types';
-import { Button, ChevronLeftIcon, ErrorState, MinusIcon, PlusIcon, ProductArt, Rating, ShoppingCartIcon, Skeleton } from '@shop/ui';
+import { Button, ChevronLeftIcon, ErrorState, MinusIcon, PlusIcon, Rating, ShoppingCartIcon, Skeleton } from '@shop/ui';
+import { ProductImage } from './ProductImage';
 
 export default function ProductPage() {
   const { id = '' } = useParams();
@@ -16,9 +17,14 @@ export default function ProductPage() {
     retry: (count, err) => !(err instanceof ApiRequestError && err.status === 404) && count < 2,
   });
 
+  useEffect(() => {
+    if (product) document.title = `${product.name} · Zephyr Shop`;
+  }, [product]);
+
   if (isPending) {
     return (
       <div className="grid gap-8 md:grid-cols-2" aria-busy="true">
+        <p role="status" className="sr-only">Loading product…</p>
         <Skeleton className="aspect-square" />
         <div className="space-y-4">
           <Skeleton className="h-10 w-2/3" />
@@ -63,7 +69,7 @@ export default function ProductPage() {
         / <span className="capitalize">{product.category}</span>
       </nav>
       <div className="grid gap-8 md:grid-cols-2">
-        <ProductArt emoji={product.emoji} hue={product.hue} className="rounded-2xl text-9xl" />
+        <ProductImage product={product} />
         <div className="space-y-5">
           <h1 className="text-3xl font-bold">{product.name}</h1>
           <div className="flex items-center gap-4">
@@ -71,7 +77,7 @@ export default function ProductPage() {
             <Rating value={product.rating} />
           </div>
           <p className="text-muted">{product.description}</p>
-          <p className={soldOut ? 'font-medium text-danger' : product.stock <= 5 ? 'font-medium text-amber-600' : 'text-muted'}>
+          <p className={soldOut ? 'font-medium text-danger' : product.stock <= 5 ? 'font-medium text-warning' : 'text-muted'}>
             {soldOut ? 'Out of stock' : product.stock <= 5 ? `Only ${product.stock} left` : 'In stock'}
           </p>
 

@@ -3,7 +3,7 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router';
 import { api } from '@shop/api-client';
 import { categorySchema, productQuerySchema } from '@shop/types';
-import { Button, ChevronLeftIcon, ChevronRightIcon, ErrorState, Skeleton, XMarkIcon, cn } from '@shop/ui';
+import { Button, ChevronLeftIcon, ChevronRightIcon, ErrorState, ProgressBar, Skeleton, XMarkIcon, cn } from '@shop/ui';
 import { FilterMenu } from './FilterMenu';
 import { ProductCard } from './ProductCard';
 import { SearchBar } from './SearchBar';
@@ -38,12 +38,14 @@ export default function CatalogPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debounced]);
 
-  const { data, isPending, isError, refetch, isPlaceholderData } = useQuery({
+  const { data, isPending, isError, refetch, isFetching } = useQuery({
     queryKey: ['products', { q: urlSearch, category, sort, page }],
     queryFn: () => api.listProducts({ search: urlSearch || undefined, category, sort, page }),
     placeholderData: keepPreviousData,
   });
 
+  // Busy = a debounced keystroke is pending, or a (re)fetch is in flight after the first load.
+  const busy = !isPending && (search !== debounced || isFetching);
   const totalPages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1;
 
   return (
@@ -53,7 +55,7 @@ export default function CatalogPage() {
       </h1>
 
       <div className="flex items-center gap-3">
-        <SearchBar value={search} onChange={setSearch} />
+        <SearchBar value={search} onChange={setSearch} loading={busy} />
         <FilterMenu
           category={category}
           sort={sort}
@@ -61,6 +63,8 @@ export default function CatalogPage() {
           onSort={(s) => update({ sort: s === 'featured' ? undefined : s })}
         />
       </div>
+
+      <ProgressBar active={busy || isPending} className="-mt-3" />
 
       {category && (
         <p className="flex items-center gap-2 text-sm">
@@ -77,6 +81,10 @@ export default function CatalogPage() {
         </p>
       )}
 
+      <p role="status" className="text-sm text-muted">
+        {isError ? '' : isPending ? 'Loading products…' : busy ? 'Updating results…' : `${data?.total ?? 0} product${data?.total === 1 ? '' : 's'}`}
+      </p>
+
       {isError ? (
         <ErrorState message="We couldn't load the products." onRetry={() => refetch()} />
       ) : isPending ? (
@@ -91,10 +99,7 @@ export default function CatalogPage() {
         <p className="py-12 text-center text-muted">No products match your filters.</p>
       ) : (
         <>
-          <p className="text-sm text-muted" aria-live="polite">
-            {data.total} product{data.total === 1 ? '' : 's'}
-          </p>
-          <ul className={cn(GRID, isPlaceholderData && 'opacity-60')}>
+          <ul aria-busy={busy} className={cn(GRID, 'motion-safe:transition-opacity', busy && 'pointer-events-none opacity-50')}>
             {data.items.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}

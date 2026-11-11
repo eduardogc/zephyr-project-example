@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { api, ApiRequestError } from '@shop/api-client';
 import { orderInputSchema, type Order } from '@shop/types';
@@ -8,6 +8,12 @@ import { cart, type CartLine } from './cartStore';
 export function CheckoutForm({ items, onSuccess }: { items: CartLine[]; onSuccess: (o: Order) => void }) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string>();
+  const formRef = useRef<HTMLFormElement>(null);
+
+  // After a failed submit, move focus to the first invalid field so keyboard/AT users land on the problem.
+  useEffect(() => {
+    if (Object.keys(errors).length) formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+  }, [errors]);
 
   const order = useMutation({
     mutationFn: api.createOrder,
@@ -44,10 +50,10 @@ export function CheckoutForm({ items, onSuccess }: { items: CartLine[]; onSucces
     const error = errors[`customer.${name}`];
     return (
       <div className="space-y-1">
-        <label htmlFor={name} className="text-sm font-medium">{label}</label>
+        <label htmlFor={name} className="text-sm font-medium">{label} <span aria-hidden className="text-muted">*</span></label>
         <input
           id={name} name={name} type={type} autoComplete={name === 'address' ? 'street-address' : name}
-          aria-invalid={!!error} aria-describedby={error ? `${name}-error` : undefined}
+          aria-required="true" aria-invalid={!!error} aria-describedby={error ? `${name}-error` : undefined}
           className="w-full rounded-lg border border-border bg-surface px-3 py-2 aria-invalid:border-danger"
         />
         {error && <p id={`${name}-error`} className="text-sm text-danger">{error}</p>}
@@ -56,12 +62,12 @@ export function CheckoutForm({ items, onSuccess }: { items: CartLine[]; onSucces
   };
 
   return (
-    <form onSubmit={submit} noValidate className="space-y-4">
-      <h2 className="text-xl font-semibold">Checkout</h2>
+    <form ref={formRef} onSubmit={submit} noValidate aria-labelledby="checkout-title" className="space-y-4">
+      <h2 id="checkout-title" className="text-xl font-semibold">Checkout</h2>
       {field('name', 'Full name')}
       {field('email', 'Email', 'email')}
       {field('address', 'Shipping address')}
-      {errors.items && <p className="text-sm text-danger">{errors.items}</p>}
+      {errors.items && <p role="alert" className="text-sm text-danger">{errors.items}</p>}
       {serverError && <p role="alert" className="text-sm text-danger">{serverError}</p>}
       <Button type="submit" disabled={order.isPending} className="w-full py-3">
         {order.isPending ? 'Placing order…' : 'Place order'}

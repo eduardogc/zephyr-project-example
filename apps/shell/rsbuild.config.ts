@@ -7,7 +7,7 @@ import { withZephyr } from 'zephyr-rsbuild-plugin';
 const singleton = { singleton: true } as const;
 
 export default defineConfig({
-  html: { title: 'Shop · shell' },
+  html: { title: 'Zephyr Shop', template: './template.html' },
   output: { assetPrefix: 'auto' },
   source: {
     // Workspace packages ship TypeScript source; let Rsbuild compile them.

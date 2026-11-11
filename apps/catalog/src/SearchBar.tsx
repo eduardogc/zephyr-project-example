@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react';
-import { MagnifyingGlassIcon, XMarkIcon } from '@shop/ui';
+import { MagnifyingGlassIcon, Spinner, XMarkIcon } from '@shop/ui';
 
-type Props = { value: string; onChange: (value: string) => void };
+type Props = { value: string; onChange: (value: string) => void; loading?: boolean };
 
-export function SearchBar({ value, onChange }: Props) {
+export function SearchBar({ value, onChange, loading = false }: Props) {
   const ref = useRef<HTMLInputElement>(null);
 
   // "/" focuses the search box (unless you're already typing somewhere).
@@ -20,9 +20,14 @@ export function SearchBar({ value, onChange }: Props) {
 
   return (
     <div className="relative min-w-0 flex-1">
-      <MagnifyingGlassIcon aria-hidden className="pointer-events-none absolute left-3.5 top-1/2 size-5 -translate-y-1/2 text-muted" />
+      {loading ? (
+        <Spinner className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-brand" />
+      ) : (
+        <MagnifyingGlassIcon aria-hidden className="pointer-events-none absolute left-3.5 top-1/2 size-5 -translate-y-1/2 text-muted" />
+      )}
       <input
         ref={ref}
+        aria-keyshortcuts="/"
         type="search"
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -39,7 +44,7 @@ export function SearchBar({ value, onChange }: Props) {
             onChange('');
             ref.current?.focus();
           }}
-          className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted hover:bg-border/60 hover:text-text focus-visible:outline-2 focus-visible:outline-brand"
+          className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-muted hover:bg-border/60 hover:text-text focus-visible:outline-2 focus-visible:outline-brand"
         >
           <XMarkIcon aria-hidden className="size-4" />
         </button>
